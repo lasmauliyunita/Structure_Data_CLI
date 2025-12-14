@@ -1,0 +1,303 @@
+class Node:
+    def __init__(self, data):   # FIX
+        self.data = data
+        self.prev = None
+        self.next = None
+
+
+class DoublyLinkedList:
+    def __init__(self):        # FIX
+        self.head = None
+        self.tail = None
+
+    def append(self, data):
+        new_node = Node(data)
+        if not self.head:
+            self.head = self.tail = new_node
+            return
+        self.tail.next = new_node
+        new_node.prev = self.tail
+        self.tail = new_node
+
+    def find(self, key, keyname="id"):
+        curr = self.head
+        while curr:
+            if curr.data[keyname] == key:
+                return curr
+            curr = curr.next
+        return None
+
+    def delete(self, key, keyname="id"):
+        node = self.find(key, keyname)
+        if not node:
+            return False
+
+        if node.prev:
+            node.prev.next = node.next
+        else:
+            self.head = node.next
+
+        if node.next:
+            node.next.prev = node.prev
+        else:
+            self.tail = node.prev
+
+        return True
+
+    def update(self, key, new_data, keyname="id"):
+        node = self.find(key, keyname)
+        if node:
+            node.data.update(new_data)
+            return True
+        return False
+
+    def display(self):
+        result = []
+        curr = self.head
+        while curr:
+            result.append(curr.data)
+            curr = curr.next
+        return result
+
+    @staticmethod
+    def create_song(id, title, artist, genre, year):
+        return {
+            "id": id,
+            "title": title,
+            "artist": artist,
+            "genre": genre,
+            "year": year,
+        }
+
+
+library = DoublyLinkedList()
+playlist = DoublyLinkedList()
+history_stack = []
+curr_song = None
+
+
+def load_initial_songs():
+    initial_songs = [
+        {"id": "1", "title": "Midnight Sky", "artist": "Miley Cyrus", "genre": "Pop", "year": 2020},
+        {"id": "2", "title": "Blinding Lights", "artist": "The Weeknd", "genre": "Synthwave", "year": 2019},
+        {"id": "3", "title": "Shape of You", "artist": "Ed Sheeran", "genre": "Pop", "year": 2017},
+        {"id": "4", "title": "Levitating", "artist": "Dua Lipa", "genre": "Pop", "year": 2020},
+        {"id": "5", "title": "Numb", "artist": "Linkin Park", "genre": "Rock", "year": 2003},
+        {"id": "6", "title": "Lovely", "artist": "Billie Eilish", "genre": "Indie", "year": 2018}
+    ]
+    for s in initial_songs:
+        library.append(s)
+
+
+load_initial_songs()
+
+
+def play_song(song):
+    global curr_song
+    curr_song = song
+    history_stack.append(song)
+    print(f"\n▶ Memutar: {song['title']} - {song['artist']}")
+
+
+def stop_song():
+    global curr_song
+    if curr_song:
+        print(f"⏹ Menghentikan: {curr_song['title']}")
+        curr_song = None
+    else:
+        print("Tidak ada lagu yang sedang diputar.")
+
+
+def add_to_playlist(id_lagu):
+    node = library.find(id_lagu)
+    if node:
+        playlist.append(node.data)
+        print("✔ Lagu telah ditambahkan ke playlist.")
+    else:
+        print("ID lagu tidak ditemukan.")
+
+
+def remove_from_playlist(id_lagu):
+    if playlist.delete(id_lagu):
+        print("✔ Lagu dihapus dari playlist.")
+    else:
+        print("Lagu tidak ditemukan di playlist.")
+
+
+def next_playlist_song():
+    global curr_song
+    if not curr_song:
+        print("Tidak ada lagu yang sedang diputar.")
+        return
+
+    node = playlist.find(curr_song["id"])
+    if node and node.next:
+        play_song(node.next.data)
+    else:
+        print("⚠ Tidak ada lagu berikutnya di playlist.")
+
+
+def prev_playlist_song():
+    global curr_song
+    if not curr_song:
+        print("Tidak ada lagu yang sedang diputar.")
+        return
+
+    node = playlist.find(curr_song["id"])
+    if node and node.prev:
+        play_song(node.prev.data)
+    else:
+        print("⚠ Tidak ada lagu sebelumnya di playlist.")
+
+
+import random
+
+def get_similar_song(song):
+    artist_matches = []
+    genre_matches = []
+
+    curr = library.head
+    while curr:
+        s = curr.data
+        if s["id"] != song["id"]:
+            if s["artist"] == song["artist"]:
+                artist_matches.append(s)
+            elif s["genre"] == song["genre"]:
+                genre_matches.append(s)
+        curr = curr.next
+
+    if artist_matches:
+        return random.choice(artist_matches)
+    if genre_matches:
+        return random.choice(genre_matches)
+    return random.choice(library.display())
+
+
+def next_library_song():
+    global curr_song
+    if not curr_song:
+        print("Tidak ada lagu yang sedang diputar.")
+        return
+    play_song(get_similar_song(curr_song))
+
+
+def admin_menu():
+    while True:
+        print("\n MENU ADMIN ")
+        print("1. Tambah Lagu")
+        print("2. Lihat Semua Lagu")
+        print("3. Update Lagu")
+        print("4. Hapus Lagu")
+        print("0. Kembali")
+
+        pilih = input("Pilih menu: ")
+
+        if pilih == "1":
+            id = input("ID: ")
+            title = input("Judul: ")
+            artist = input("Artis: ")
+            genre = input("Genre: ")
+            year = input("Tahun: ")
+            library.append(DoublyLinkedList.create_song(id, title, artist, genre, year))
+            print("✔ Lagu berhasil ditambahkan.")
+
+        elif pilih == "2":
+            for song in library.display():
+                print(song)
+
+        elif pilih == "3":
+            id = input("ID lagu: ")
+            title = input("Judul baru: ")
+            artist = input("Artis baru: ")
+            library.update(id, {"title": title, "artist": artist})
+            playlist.update(id, {"title": title, "artist": artist})
+            print("✔ Lagu berhasil di-update.")
+
+        elif pilih == "4":
+            id = input("ID lagu: ")
+            if library.delete(id):
+                playlist.delete(id)
+                print("✔ Lagu dihapus.")
+            else:
+                print("ID tidak ditemukan.")
+
+        elif pilih == "0":
+            break
+
+
+def user_menu():
+    while True:
+        print("\n USER MENU ")
+        print("1. Cari Lagu")
+        print("2. Lihat Library")
+        print("3. Putar Lagu")
+        print("4. Stop Lagu")
+        print("5. Tambah ke Playlist")
+        print("6. Hapus dari Playlist")
+        print("7. Lihat Playlist")
+        print("8. Next Lagu")
+        print("9. Prev Lagu")
+        print("0. Kembali")
+
+        pilih = input("Pilih menu: ")
+
+        if pilih == "1":
+            id = input("ID lagu: ")
+            node = library.find(id)
+            print(node.data if node else "Lagu tidak ditemukan.")
+
+        elif pilih == "2":
+            for song in library.display():
+                print(song)
+
+        elif pilih == "3":
+            id = input("ID lagu: ")
+            node = library.find(id)
+            if node:
+                play_song(node.data)
+            else:
+                print("Lagu tidak ditemukan.")
+
+        elif pilih == "4":
+            stop_song()
+
+        elif pilih == "5":
+            add_to_playlist(input("ID lagu: "))
+
+        elif pilih == "6":
+            remove_from_playlist(input("ID lagu: "))
+
+        elif pilih == "7":
+            for s in playlist.display():
+                print(s)
+
+        elif pilih == "8":
+            next_playlist_song() if playlist.head else next_library_song()
+
+        elif pilih == "9":
+            prev_playlist_song() if playlist.head else print("Prev hanya untuk playlist.")
+
+        elif pilih == "0":
+            break
+
+
+def main():
+    while True:
+        print("\n PEMUTAR MUSIK ")
+        print("1. Login Admin")
+        print("2. Login User")
+        print("0. Keluar")
+
+        pilih = input("Pilih menu: ")
+
+        if pilih == "1":
+            admin_menu()
+        elif pilih == "2":
+            user_menu()
+        elif pilih == "0":
+            print("Keluar...")
+            break
+
+
+if __name__ == "__main__":   # FIX
+    main()

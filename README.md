@@ -1,5 +1,10 @@
 # 🎵 Aplikasi Pemutar Musik (Python)
 
+Anggota Kelompok:
+Lasmauli Yunita / 103102400026
+Fatin Hasifa Mediana / 103102400038
+Hasna Maritsa / 103102400059
+
 Aplikasi ini adalah **program pemutar musik berbasis CLI (Command Line Interface)** yang dibuat menggunakan bahasa **Python** dengan penerapan struktur data **Doubly Linked List**. Program ini mendukung dua jenis pengguna, yaitu **Admin** dan **User**, dengan fitur manajemen lagu, playlist, dan navigasi lagu.
 
 ---
